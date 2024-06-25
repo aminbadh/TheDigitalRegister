@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name" translatable="false">The Digital Register</string>
+    <string name="login">Login</string>
+    <string name="email">Email*</string>
+    <string name="password">Password*</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="fill_inputs">Please fill in the required inputs.</string>
+    <string name="logout">Logout</string>
+    <string name="recent">Recent</string>
+    <string name="register">Register</string>
+    <string name="a_prob_happened_getting_data">A problem happened when getting data.</string>
+    <string name="open">Open</string>
+    <string name="no_data_found">No data found</string>
+    <string name="getting_data">Getting data…</string>
+    <string name="you_are_offline">You are offline!</string>
+    <string name="group">Group</string>
+    <string name="group_1">Group 1</string>
+    <string name="group_2">Group 2</string>
+    <string name="time">Time</string>
+    <string name="students">Students</string>
+    <string name="absences">Absences</string>
+    <string name="pin_code">PIN code*</string>
+    <string name="save">Save</string>
+    <string name="logged_in_as">Logged in as:</string>
+    <string name="from">From:</string>
+    <string name="to">To:</string>
+    <string name="set">Set</string>
+    <string name="edit">Edit</string>
+    <string name="this_student_is_absent">This student is already marked as absent!</string>
+    <string name="please_enter_time">Please enter the time!</string>
+    <string name="wrong_pin_code">Wrong PIN code!</string>
+    <string name="load_more">Load more</string>
+    <string name="no_more_data">No more data to show!</string>
+    <string name="saved">Saved!</string>
+    <string name="delete">Delete</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="apply">Apply</string>
+    <string name="change_email">Change Email</string>
+    <string name="new_email">New email*</string>
+    <string name="change_password">Change password</string>
+    <string name="new_password">New password*</string>
+    <string name="made_by_amin_badh">Made by Amin BADH for the LPM</string>
+    <string-array name="languages">
+        <item>English</item>
+        <item>Français</item>
+        <item>العربية</item>
+    </string-array>
+    <string name="app_availability">This app is only available for professors.</string>
+    <string name="current_role_false">Your current role doesn\'t allow you to use this app.</string>
+    <string name="restart_to_change_the_language">Restart the app to change the language.</string>
+    <string name="deleted">Deleted!</string>
+    <string name="exit_q">Exit?</string>
+    <string name="changes_not_save">Changes Won\'t Be Saved!</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="delete_q">Delete?</string>
+    <string name="sure_to_delete">Are you sure you want to delete this?</string>
+</resources>
