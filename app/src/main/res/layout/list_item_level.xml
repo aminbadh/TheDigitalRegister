@@ -8,7 +8,6 @@
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
     app:cardUseCompatPadding="true"
     app:contentPadding="4dp"
     tools:viewBindingIgnore="true">

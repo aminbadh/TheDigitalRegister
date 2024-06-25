@@ -1,10 +1,9 @@
 package com.aminbadh.tdrprofessorslpm.adapter;
 
-import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,69 +11,29 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.aminbadh.tdrprofessorslpm.R;
 import com.aminbadh.tdrprofessorslpm.custom.Registration;
+import com.aminbadh.tdrprofessorslpm.interfaces.OnEmpty;
 import com.aminbadh.tdrprofessorslpm.interfaces.OnMainListener;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Objects;
 
-public class RecentRecyclerAdapter extends RecyclerView.Adapter<RecentRecyclerAdapter.RecentHolder> {
+public class RecentRecyclerAdapter extends FirestoreRecyclerAdapter<Registration,
+        RecentRecyclerAdapter.RecentHolder> {
 
-    private final ArrayList<Registration> registrations;
-    private final Context context;
+    private static final String TAG = RecentRecyclerAdapter.class.getSimpleName();
+    private final OnEmpty onEmpty;
     private final OnMainListener onMainListener;
-    private final View.OnClickListener onClickListener;
 
-    public RecentRecyclerAdapter(ArrayList<Registration> registrations, Context context,
-                                 OnMainListener onMainListener,
-                                 View.OnClickListener onClickListener) {
-        this.registrations = registrations;
-        this.context = context;
+    public RecentRecyclerAdapter(@NonNull FirestoreRecyclerOptions<Registration> options,
+                                 OnEmpty onEmpty, OnMainListener onMainListener) {
+        super(options);
+        this.onEmpty = onEmpty;
         this.onMainListener = onMainListener;
-        this.onClickListener = onClickListener;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (position == (getItemCount() - 1)) {
-            return 2;
-        } else {
-            return 1;
-        }
-    }
-
-    @NonNull
-    @Override
-    public RecentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view;
-        if (viewType == 1) {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_recent, parent, false);
-        } else {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item_more, parent, false);
-        }
-        return new RecentHolder(view, onMainListener);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RecentHolder holder, int position) {
-        if (position == (getItemCount() - 1)) {
-            holder.buttonLoadMore.setOnClickListener(onClickListener);
-        } else {
-            Registration currentRegistration = registrations.get(position);
-            holder.textViewDate.setText(reformatTime(currentRegistration.getSubmitTime()));
-            String from = context.getString(R.string.from) + " " + currentRegistration.getFromTime();
-            holder.textViewFrom.setText(from);
-            String to = context.getString(R.string.to) + " " + currentRegistration.getToTime();
-            holder.textViewTo.setText(to);
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return registrations.size();
     }
 
     public static String reformatTime(long time) {
@@ -85,20 +44,55 @@ public class RecentRecyclerAdapter extends RecyclerView.Adapter<RecentRecyclerAd
         return formatter.format(calendar.getTime());
     }
 
-    class RecentHolder extends RecyclerView.ViewHolder {
-        TextView textViewDate, textViewFrom, textViewTo;
-        Button buttonLoadMore;
+    @Override
+    public void onDataChanged() {
+        if (getItemCount() <= 0) {
+            onEmpty.onEmpty();
+        } else {
+            onEmpty.onData();
+        }
+    }
 
-        public RecentHolder(@NonNull View itemView, final OnMainListener onMainListener) {
+    @NonNull
+    @Override
+    public RecentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.list_item_recent, parent, false);
+        return new RecentHolder(view, onMainListener);
+    }
+
+    @Override
+    protected void onBindViewHolder(@NonNull RecentHolder holder, int position,
+                                    @NonNull Registration model) {
+        holder.textViewClass.setText(model.getClassName());
+        holder.textViewDate.setText(reformatTime(model.getSubmitTime()));
+        holder.textViewFrom.setText(model.getFromTime());
+        holder.textViewTo.setText(model.getToTime());
+    }
+
+    @Override
+    public void onError(@NonNull FirebaseFirestoreException e) {
+        super.onError(e);
+        Log.e(TAG, Objects.requireNonNull(e.getMessage()));
+        onEmpty.onEmpty();
+    }
+
+    public Registration getRegistration(int i) {
+        Registration registration = getItem(i);
+        registration.setDocRef(getSnapshots().getSnapshot(i).getReference().getPath());
+        return registration;
+    }
+
+    static class RecentHolder extends RecyclerView.ViewHolder {
+        TextView textViewClass, textViewDate, textViewFrom, textViewTo;
+
+        public RecentHolder(@NonNull View itemView, OnMainListener onMainListener) {
             super(itemView);
+            textViewClass = itemView.findViewById(R.id.textViewClass);
             textViewDate = itemView.findViewById(R.id.textViewDate);
             textViewFrom = itemView.findViewById(R.id.textViewFromR);
             textViewTo = itemView.findViewById(R.id.textViewToR);
-            buttonLoadMore = itemView.findViewById(R.id.buttonLoadMore);
-            if (!(getAdapterPosition() == (getItemCount() - 1))) {
-                itemView.setOnClickListener(view ->
-                        onMainListener.onClickListener(getAdapterPosition()));
-            }
+            itemView.setOnClickListener(view -> onMainListener.onClickListener(getAdapterPosition()));
         }
     }
 }

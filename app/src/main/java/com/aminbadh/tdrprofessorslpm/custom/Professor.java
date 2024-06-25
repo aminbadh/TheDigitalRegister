@@ -1,12 +1,14 @@
 package com.aminbadh.tdrprofessorslpm.custom;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Professor implements Serializable {
     private String firstName, lastName, subject, role;
-    private ArrayList<String> levels, level1S, level2Sc, level3M, level3Sc, level4L,
-            level4M, level4Sc, level4T;
+    private ArrayList<String> levels, level1S, level2Sc, level3M,
+            level3Sc, level4L, level4M, level4Sc, level4T;
 
     public Professor() {
         // Used in Firebase Cloud Firestore.
@@ -85,6 +87,7 @@ public class Professor implements Serializable {
         return level4T;
     }
 
+    @Exclude
     public String getDisplayName() {
         return firstName + " " + lastName;
     }

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="light_blue_200">#90c9f9</color>
-    <color name="light_blue_500">#2196F3</color>
-    <color name="light_blue_700">#1a75d2</color>
-    <color name="purple_300">#8a71fc</color>
-    <color name="purple_600">#8E24AA</color>
-    <color name="orange_900">#f37f21</color>
+    <color name="blue_primary">#467BEF</color>
+    <color name="blue_primary_variant">#0050bc</color>
+    <color name="cyan_secondary">#0098bd</color>
+    <color name="cyan_secondary_variant">#4CC9F0</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="ic_launcher_background">#0096D5</color>
+    <color name="dark_gray">#595959</color>
+    <color name="black_gray">#121212</color>
+    <color name="ic_launcher_background">#467BEE</color>
+    <color name="red_700">#D32F2F</color>
 </resources>

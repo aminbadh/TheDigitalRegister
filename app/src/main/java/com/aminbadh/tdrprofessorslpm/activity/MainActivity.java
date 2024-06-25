@@ -2,194 +2,164 @@ package com.aminbadh.tdrprofessorslpm.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.aminbadh.tdrprofessorslpm.R;
-import com.aminbadh.tdrprofessorslpm.custom.Level;
-import com.aminbadh.tdrprofessorslpm.custom.LevelMain;
-import com.aminbadh.tdrprofessorslpm.custom.MAObject;
-import com.aminbadh.tdrprofessorslpm.custom.Professor;
+import com.aminbadh.tdrprofessorslpm.adapter.RecentRecyclerAdapter;
+import com.aminbadh.tdrprofessorslpm.custom.Registration;
 import com.aminbadh.tdrprofessorslpm.databinding.ActivityMainBinding;
-import com.aminbadh.tdrprofessorslpm.fragment.LevelFragment;
+import com.aminbadh.tdrprofessorslpm.interfaces.OnEmpty;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
-import java.util.Objects;
-
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.LEVELS_REF;
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.LEVEL_FIELD;
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.MAIN_ACTIVITY_OBJECT;
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.PROF_OBJECT;
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.RECENT_FRAGMENT;
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.REGISTER_FRAGMENT;
-import static com.aminbadh.tdrprofessorslpm.custom.Functions.displaySnackbarStr;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.LOADING_SIZE;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.MAIN_PREFS;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.REGISTRATIONS_COL;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.REGISTRATION_OBJECT;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private ArrayList<Level> levels = new ArrayList<>();
-    private LevelMain levelMainRegister;
+    private RecentRecyclerAdapter adapter;
     private ActivityMainBinding binding;
-    private LevelMain levelMainRecent;
-    private boolean register = true;
-    private Professor professor;
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Initialise the binding object.
         binding = ActivityMainBinding.inflate(getLayoutInflater());
-        // Set Activity's content view.
+        // Set the Activity's content view.
         setContentView(binding.getRoot());
-        // Get the Professor object.
-        getProfessor();
+        // Set the Activity's title.
+        setTitle(R.string.app_bar_main);
+        // Initialise the auth object.
+        auth = FirebaseAuth.getInstance();
+        // Setup the RecyclerView.
+        setupRecyclerView();
+        // Setup the FloatingActionButton.
+        setupFloatingActionButton();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            // Start listening.
+            adapter.startListening();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (levels.isEmpty()) {
-            // Get the levels' data.
-            getLevelsData();
-        } else {
-            // Setup the BottomNavigationView.
-            setupBottomNav();
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            // Start the login Activity.
+            startActivity(new Intent(this, LoginActivity.class));
+            // Stop listening.
+            adapter.stopListening();
+            // Finish the current Activity.
+            finish();
         }
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        // Create a new MAObject object and initialise it.
-        MAObject object = new MAObject(register, levels);
-        // Add this object to the outState Bundle.
-        outState.putSerializable(MAIN_ACTIVITY_OBJECT, object);
-        super.onSaveInstanceState(outState);
+    protected void onStop() {
+        super.onStop();
+        // Stop listening.
+        adapter.stopListening();
     }
 
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        // Create and initialise a new MAObject object.
-        MAObject object = (MAObject) savedInstanceState.getSerializable(MAIN_ACTIVITY_OBJECT);
-        // Assign the object's register boolean value to the global register variable.
-        register = object.isRegister();
-        // Assign the object's levels ArrayList to the global one.
-        levels = object.getLevels();
-        super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    private void getProfessor() {
-        // Get the passed Professor object an assign it to the global Professor variable.
-        professor = (Professor) getIntent().getSerializableExtra(PROF_OBJECT);
-        if (professor == null) {
-            // If the Professor object is null, stop the app.
-            Toast.makeText(this, R.string.a_prob_happened_getting_data,
-                    Toast.LENGTH_LONG).show();
-            MainActivity.this.finish();
-        }
-    }
-
-    private void setupBottomNav() {
-        // Initialise the LevelMain objects.
-        levelMainRegister = new LevelMain(REGISTER_FRAGMENT, levels, professor);
-        levelMainRecent = new LevelMain(RECENT_FRAGMENT, levels, professor);
-        // Set the BottomNavigationView's onNavigationItemSelectedListener.
-        binding.bottomNavMain.setOnNavigationItemSelectedListener(
-                item -> {
-                    Fragment selectedFragment = null;
-                    if (item.getItemId() == R.id.nav_register) {
-                        // If the selected item is the "register" item,
-                        // assign the Fragment object to a new LevelFragment.
-                        selectedFragment = LevelFragment.newInstance(levelMainRegister);
-                        register = true;
-                    } else if (item.getItemId() == R.id.nav_recent) {
-                        // If the selected item is the "recent" item,
-                        // assign the Fragment object to a new LevelFragment.
-                        selectedFragment = LevelFragment.newInstance(levelMainRecent);
-                        register = false;
-                    }
-                    // Display the Fragment object.
-                    assert selectedFragment != null;
-                    getSupportFragmentManager().beginTransaction().replace(
-                            R.id.fragmentContainer, selectedFragment).commit();
-                    // Return true.
-                    return true;
-                });
-        if (register) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainer, LevelFragment.newInstance(levelMainRegister))
-                    .commitAllowingStateLoss();
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainer, LevelFragment.newInstance(levelMainRecent))
-                    .commitAllowingStateLoss();
-        }
-    }
-
-    private void getLevelsData() {
-        // Show the wait feedback.
-        binding.constraintLayoutWaitMain.setVisibility(View.VISIBLE);
-        // Get the levels whereIn the levels that the professor teach.
-        db.collection(LEVELS_REF).whereIn(LEVEL_FIELD, professor.getLevels())
-                .get().addOnCompleteListener(task -> {
-            // Set the wait feedback visibility to Gone.
-            binding.constraintLayoutWaitMain.setVisibility(View.GONE);
-            if (task.isSuccessful()) {
-                // If the task was successful, loop in each documentSnapshot and do the following.
-                for (QueryDocumentSnapshot documentSnapshot : Objects.requireNonNull(task.getResult())) {
-                    // Convert the documentSnapshot to a Level object.
-                    Level level = documentSnapshot.toObject(Level.class);
-                    // Set the Level object Id.
-                    level.setDocId(documentSnapshot.getId());
-                    // Add the Level object.
-                    levels.add(level);
+    private void setupRecyclerView() {
+        // Assert that the current user isn't null.
+        assert auth.getCurrentUser() != null;
+        // Create a Query.
+        Query query = db.collectionGroup(REGISTRATIONS_COL)
+                .whereEqualTo("professorId", auth.getCurrentUser().getUid())
+                .orderBy("submitTime", Query.Direction.DESCENDING)
+                .limit(getSharedPreferences(MAIN_PREFS, MODE_PRIVATE).getInt(LOADING_SIZE, 10));
+        // Initialise the adapter.
+        adapter = new RecentRecyclerAdapter(new FirestoreRecyclerOptions.Builder<Registration>()
+                .setLifecycleOwner(this).setQuery(query, Registration.class).build(), new OnEmpty() {
+            @Override
+            public void onEmpty() {
+                if (binding.clNoDataMain.getVisibility() == View.GONE) {
+                    // Show the clNoDataMain.
+                    binding.clNoDataMain.setAlpha(0f);
+                    binding.clNoDataMain.setVisibility(View.VISIBLE);
+                    binding.clNoDataMain.animate().alpha(1f)
+                            .setDuration(getResources().getInteger
+                                    (android.R.integer.config_mediumAnimTime))
+                            .setListener(null);
+                    binding.recyclerView.setVisibility(View.GONE);
                 }
-            } else {
-                // If the task failed, log the exception.
-                Log.e(TAG, "onComplete: Task Failed", task.getException());
-                // Display the exception's message.
-                displaySnackbarStr(binding.getRoot(), Objects.requireNonNull(task.getException()).getMessage());
             }
-            // Setup the BottomNavigationView.
-            setupBottomNav();
+
+            @Override
+            public void onData() {
+                if (binding.recyclerView.getVisibility() == View.GONE) {
+                    // Show the recyclerView.
+                    binding.recyclerView.setAlpha(0f);
+                    binding.recyclerView.setVisibility(View.VISIBLE);
+                    binding.recyclerView.animate().alpha(1f)
+                            .setDuration(getResources().getInteger
+                                    (android.R.integer.config_mediumAnimTime))
+                            .setListener(null);
+                    binding.clNoDataMain.setVisibility(View.GONE);
+                }
+            }
+        }, position -> {
+            // Create an Intent with an extra of the clicked registration and start it.
+            Intent intent = new Intent(MainActivity.this, RecentAbsenceActivity.class);
+            intent.putExtra(REGISTRATION_OBJECT, adapter.getRegistration(position));
+            startActivity(intent);
         });
+        // Set the RecyclerView's size as fixed.
+        binding.recyclerView.setHasFixedSize(true);
+        // Set the RecyclerView's layout manager.
+        binding.recyclerView.setLayoutManager(new GridLayoutManager
+                (this, calculateNoOfColumns(400)));
+        // Set the RecyclerView's adapter.
+        binding.recyclerView.setAdapter(adapter);
+    }
+
+    public int calculateNoOfColumns(float columnWidthDp) {
+        // Create a DisplayMetrics object.
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        // Create a screenWidth variable.
+        float screenWidthDp = displayMetrics.widthPixels / displayMetrics.density;
+        // Return the number of possible columns.
+        return (int) (screenWidthDp / columnWidthDp + 0.5);
+    }
+
+    private void setupFloatingActionButton() {
+        // Start the absence Activity.
+        binding.fab.setOnClickListener(view -> startActivity(
+                new Intent(MainActivity.this, AbsenceActivity.class)));
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
+        // Inflate the menu.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        // Return true.
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.men_logout) {
-            // Logout the user.
-            FirebaseAuth.getInstance().signOut();
-            // Start an Intent going to the LoginActivity class.
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            // Finish the current Activity.
-            MainActivity.this.finish();
-        } else if (item.getItemId() == R.id.men_settings) {
-            // Create an Intent object going to the SettingActivity class.
-            Intent intent = new Intent(MainActivity.this, SettingActivity.class);
-            // Add the Professor object as an extra.
-            intent.putExtra(PROF_OBJECT, professor);
-            // Start the intent.
-            startActivity(intent);
-        }
+        // Start the Settings Activity.
+        startActivity(new Intent(this, SettingsActivity.class));
+        // Return true.
         return true;
     }
 }

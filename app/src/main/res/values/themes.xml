@@ -1,16 +1,44 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Theme.TheDigitalRegister" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/light_blue_500</item>
-        <item name="colorPrimaryVariant">@color/light_blue_700</item>
+        <!-- App bar -->
+        <item name="colorPrimary">@color/blue_primary</item>
+        <!-- Tool bar -->
+        <item name="colorPrimaryVariant">@color/blue_primary_variant</item>
+        <!-- Top of primary -->
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/purple_300</item>
-        <item name="colorSecondaryVariant">@color/purple_600</item>
+        <!-- Completion to the primary -->
+        <item name="colorSecondary">@color/cyan_secondary</item>
+        <!-- tonal variation of the secondary -->
+        <item name="colorSecondaryVariant">@color/cyan_secondary_variant</item>
+        <!-- Top of secondary -->
         <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
+        <!-- Background color -->
+        <item name="android:colorBackground">@color/white</item>
+        <!-- Top of background -->
+        <item name="colorOnBackground">@color/black</item>
+        <!-- Surface color -->
+        <item name="colorSurface">@color/white</item>
+        <!-- Top of surface -->
+        <item name="colorOnSurface">@color/black</item>
+        <!-- Error color -->
+        <item name="colorError">@color/red_700</item>
+        <!-- Top of error -->
+        <item name="colorOnError">@color/white</item>
+        <!-- Tool bar -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
     </style>
+
+    <style name="Theme.TheDigitalRegister.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ProgressAccent" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorAccent">@color/cyan_secondary</item>
+    </style>
+
+    <style name="Theme.TheDigitalRegister.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.TheDigitalRegister.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

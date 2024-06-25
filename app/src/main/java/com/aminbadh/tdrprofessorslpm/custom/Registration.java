@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Registration implements Serializable {
     private String professorName, professorId, subject,
-            fromTime, toTime, group, docId;
+            fromTime, toTime, group, className, docRef;
     private ArrayList<String> absences;
     private long submitTime;
 
@@ -16,7 +16,7 @@ public class Registration implements Serializable {
     }
 
     public Registration(String professorName, String professorId, String subject,
-                        String fromTime, String toTime, String group,
+                        String fromTime, String toTime, String group, String className,
                         ArrayList<String> absences, long submitTime) {
         this.professorName = professorName;
         this.professorId = professorId;
@@ -24,6 +24,7 @@ public class Registration implements Serializable {
         this.fromTime = fromTime;
         this.toTime = toTime;
         this.group = group;
+        this.className = className;
         this.absences = absences;
         this.submitTime = submitTime;
     }
@@ -53,8 +54,12 @@ public class Registration implements Serializable {
     }
 
     @Exclude
-    public String getDocId() {
-        return docId;
+    public String getDocRef() {
+        return docRef;
+    }
+
+    public void setDocRef(String docRef) {
+        this.docRef = docRef;
     }
 
     public ArrayList<String> getAbsences() {
@@ -65,7 +70,7 @@ public class Registration implements Serializable {
         return submitTime;
     }
 
-    public void setDocId(String docId) {
-        this.docId = docId;
+    public String getClassName() {
+        return className;
     }
 }

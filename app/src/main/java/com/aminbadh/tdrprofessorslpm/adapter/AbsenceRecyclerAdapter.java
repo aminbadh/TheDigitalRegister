@@ -50,7 +50,7 @@ public class AbsenceRecyclerAdapter extends RecyclerView.Adapter<AbsenceRecycler
         public AbsenceHolder(@NonNull View itemView, final OnMainListener onMainListener) {
             super(itemView);
             textViewStudentName = itemView.findViewById(R.id.textViewStudentName);
-            imageView = itemView.findViewById(R.id.imageViewStatus);
+            imageView = itemView.findViewById(R.id.imageViewAdd);
             itemView.setOnClickListener(view -> onMainListener.onClickListener(getAdapterPosition()));
         }
     }

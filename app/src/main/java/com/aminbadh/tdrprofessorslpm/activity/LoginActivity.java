@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.aminbadh.tdrprofessorslpm.R;
 import com.aminbadh.tdrprofessorslpm.custom.LocaleHelper;
-import com.aminbadh.tdrprofessorslpm.custom.Professor;
 import com.aminbadh.tdrprofessorslpm.databinding.ActivityLoginBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -18,8 +17,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;
 
-import static com.aminbadh.tdrprofessorslpm.custom.Constants.PROF_OBJECT;
 import static com.aminbadh.tdrprofessorslpm.custom.Constants.ROLE_DEV;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.ROLE_FIELD;
+import static com.aminbadh.tdrprofessorslpm.custom.Constants.ROLE_MANAGER;
 import static com.aminbadh.tdrprofessorslpm.custom.Constants.ROLE_PROF;
 import static com.aminbadh.tdrprofessorslpm.custom.Constants.USERS_COLLECTION;
 import static com.aminbadh.tdrprofessorslpm.custom.Functions.displaySnackbarRef;
@@ -43,20 +43,15 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         // Initialise the auth object.
         auth = FirebaseAuth.getInstance();
-        // Set the wait feedback visibility to gone.
-        setWaitFeedbackVisibility(false);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         if (auth.getCurrentUser() != null) {
-            // Disable the login button.
-            enableLoginButton(false);
-            // Set the wait feedback visibility to visible.
-            setWaitFeedbackVisibility(true);
-            // Check user document.
-            checkUserDoc(auth.getCurrentUser().getUid());
+            // If the current user isn't null,
+            // start the MainActivity.
+            startMainActivity();
         }
     }
 
@@ -74,8 +69,8 @@ public class LoginActivity extends AppCompatActivity {
             // inform the user that he must fill all required inputs.
             displaySnackbarRef(binding.getRoot(), R.string.fill_inputs);
         } else {
-            // Disable the login button.
-            enableLoginButton(false);
+            // Disable the buttons.
+            enableButtons(false);
             // Set the wait feedback visibility to visible.
             setWaitFeedbackVisibility(true);
             // Request the focus for the root.
@@ -96,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Set the wait feedback visibility to Gone.
                             setWaitFeedbackVisibility(false);
                             // Enable the login button.
-                            enableLoginButton(true);
+                            enableButtons(true);
                             // Log the exception.
                             Log.e(TAG, "onComplete: User sign in failed", task.getException());
                             // Display the exception's message.
@@ -108,59 +103,60 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkUserDoc(String id) {
+        // Get the user's document.
         db.collection(USERS_COLLECTION).document(id).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    Professor professor = documentSnapshot.toObject(Professor.class);
-                    // Update the UI.
-                    assert professor != null;
-                    updateUI(professor);
-                }).addOnFailureListener(e -> {
-            // Set the wait feedback visibility to Gone.
-            setWaitFeedbackVisibility(false);
-            // Enable the login button.
-            enableLoginButton(true);
-            // Log the exception.
-            Log.e(TAG, "onFailure: Doc", e);
-            // Display the exception's message.
-            displaySnackbarStr(binding.getRoot(), e.getMessage());
-            // Logout the user.
-            auth.signOut();
-        });
+                .addOnCompleteListener(task -> {
+                    // Set the wait feedback visibility to Gone.
+                    setWaitFeedbackVisibility(false);
+                    if (task.isSuccessful()) {
+                        // Create a String variable that holds the user's role.
+                        String role = task.getResult().getString(ROLE_FIELD);
+                        if (role != null && (role.equals(ROLE_PROF)
+                                || role.equals(ROLE_MANAGER) || role.equals(ROLE_DEV))) {
+                            // Start the MainActivity.
+                            startMainActivity();
+                        } else {
+                            // Enable the buttons.
+                            enableButtons(true);
+                            // Inform the user that his role isn't compatible.
+                            displaySnackbarRef(binding.getRoot(), R.string.current_role_false);
+                            // Logout the user.
+                            auth.signOut();
+                        }
+                    } else {
+                        // Make sure that there's an exception.
+                        assert task.getException() != null;
+                        // Enable the buttons.
+                        enableButtons(true);
+                        // Log the exception.
+                        Log.e(TAG, "onFailure: Doc", task.getException());
+                        // Display the exception's message.
+                        displaySnackbarStr(binding.getRoot(), task.getException().getMessage());
+                        // Logout the user.
+                        auth.signOut();
+                    }
+                });
     }
 
-    private void updateUI(Professor professor) {
-        // Set the wait feedback visibility to Gone.
-        setWaitFeedbackVisibility(false);
-        String role = professor.getRole();
-        if (role.equals(ROLE_PROF) || role.equals(ROLE_DEV)) {
-            // If the user's role is a Professor or a Developer,
-            // create a new Intent object going to the MainActivity class.
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            // Add the Professor object as an extra.
-            intent.putExtra(PROF_OBJECT, professor);
-            // Start the intent.
-            startActivity(intent);
-            // Finish the current activity.
-            LoginActivity.this.finish();
-        } else {
-            // Enable the login button.
-            enableLoginButton(true);
-            // Inform the user that his role isn't compatible.
-            displaySnackbarRef(binding.getRoot(), R.string.current_role_false);
-            // Logout the user.
-            auth.signOut();
-        }
+    private void startMainActivity() {
+        // Start the intent going to the MainActivity class.
+        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        // Finish the current activity.
+        LoginActivity.this.finish();
     }
 
     private void setWaitFeedbackVisibility(boolean b) {
         if (b) {
-            binding.constraintLayoutWait.setVisibility(View.VISIBLE);
+            // Show the CLWait.
+            binding.CLWait.setVisibility(View.VISIBLE);
         } else {
-            binding.constraintLayoutWait.setVisibility(View.GONE);
+            // Hide the CLWait.
+            binding.CLWait.setVisibility(View.GONE);
         }
     }
 
-    private void enableLoginButton(boolean b) {
+    private void enableButtons(boolean b) {
+        // Enable or disable the buttons.
         binding.buttonLogin.setEnabled(b);
     }
 }

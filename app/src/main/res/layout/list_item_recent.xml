@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"
-    app:cardElevation="6dp"
     app:cardUseCompatPadding="true"
     app:contentPadding="12dp"
     tools:viewBindingIgnore="true">
@@ -15,33 +14,52 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:id="@+id/textViewDate"
+            android:id="@+id/textViewClass"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:text="2Sc6" />
+
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewClass"
             tools:text="10/06/2020" />
 
         <TextView
             android:id="@+id/textViewFromR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="@+id/textViewDate"
-            app:layout_constraintTop_toBottomOf="@+id/textViewDate"
-            tools:text="From: 10:0" />
+            android:layout_marginStart="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewDate"
+            app:layout_constraintStart_toEndOf="@+id/textViewDate"
+            app:layout_constraintTop_toTopOf="@+id/textViewDate"
+            tools:text="10:0" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="@string/arrow"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewFromR"
+            app:layout_constraintStart_toEndOf="@+id/textViewFromR"
+            app:layout_constraintTop_toTopOf="@+id/textViewFromR" />
 
         <TextView
             android:id="@+id/textViewToR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textSize="16sp"
-            app:layout_constraintStart_toEndOf="@+id/textViewFromR"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@+id/textView5"
             app:layout_constraintTop_toTopOf="@+id/textViewFromR"
-            tools:text="To: 11:0" />
+            tools:text="11:0" />
 
         <ImageView
             android:id="@+id/imageViewArrow"
@@ -50,7 +68,8 @@
             android:contentDescription="@string/open"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textViewDate"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_arrow_right" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

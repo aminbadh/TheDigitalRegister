@@ -28,13 +28,13 @@ public class ClassRecyclerAdapter extends RecyclerView.Adapter<ClassRecyclerAdap
     @Override
     public ClassHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_main, parent, false);
+                .inflate(R.layout.list_item_level, parent, false);
         return new ClassHolder(view, onMainListener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ClassHolder holder, int position) {
-        holder.textViewName.setText(classes.get(position).getClassNum());
+        holder.textViewName.setText(classes.get(position).getClassName());
     }
 
     @Override

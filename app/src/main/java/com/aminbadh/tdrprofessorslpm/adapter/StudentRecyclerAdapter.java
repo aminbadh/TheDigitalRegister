@@ -20,11 +20,16 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<
 
     private final OnMainListener onMainListener;
     private final ArrayList<String> students;
+    private ArrayList<String> absences = new ArrayList<>();
 
-    public StudentRecyclerAdapter(ArrayList<String> students, OnMainListener onMainListener) {
+    public StudentRecyclerAdapter(ArrayList<String> students, ArrayList<String> absences,
+                                  OnMainListener onMainListener) {
         Collections.sort(students);
         this.students = students;
         this.onMainListener = onMainListener;
+        if (!(absences == null || absences.isEmpty())) {
+            this.absences = absences;
+        }
     }
 
     @NonNull
@@ -37,8 +42,12 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<
 
     @Override
     public void onBindViewHolder(@NonNull StudentHolder holder, int position) {
-        holder.textViewStudentName.setText(students.get(position));
-        holder.imageView.setImageResource(R.drawable.ic_add_circle);
+        String name = students.get(position);
+        if (absences.contains(name)) {
+            holder.imageViewAbsent.setVisibility(View.VISIBLE);
+        }
+        holder.textViewStudentName.setText(name);
+        holder.imageViewAdd.setImageResource(R.drawable.ic_add_circle);
     }
 
     @Override
@@ -52,12 +61,13 @@ public class StudentRecyclerAdapter extends RecyclerView.Adapter<
 
     static class StudentHolder extends RecyclerView.ViewHolder {
         TextView textViewStudentName;
-        ImageView imageView;
+        ImageView imageViewAdd, imageViewAbsent;
 
         public StudentHolder(@NonNull View itemView, final OnMainListener onMainListener) {
             super(itemView);
             textViewStudentName = itemView.findViewById(R.id.textViewStudentName);
-            imageView = itemView.findViewById(R.id.imageViewStatus);
+            imageViewAdd = itemView.findViewById(R.id.imageViewAdd);
+            imageViewAbsent = itemView.findViewById(R.id.imageViewAbsent);
             itemView.setOnClickListener(view -> onMainListener.onClickListener(getAdapterPosition()));
         }
     }
